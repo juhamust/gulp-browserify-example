@@ -17,6 +17,7 @@ coffeelint = require('gulp-coffeelint')
 livereload = require('gulp-livereload')
 filter = require('gulp-filter')
 plumber = require('gulp-plumber')
+shell = require('gulp-shell')
 
 
 # Clean generated files
@@ -27,6 +28,13 @@ gulp.task 'clean', (cb) ->
       color: 'red'
     ))
     .pipe(clean())
+
+gulp.task 'doc', () ->
+  gulp.src('doc/*.*')
+    .pipe(watch())
+    .pipe(shell([
+      'sphinx-build -b singlehtml doc/ dist/doc'
+    ]))
 
 
 gulp.task 'build', () ->
@@ -59,11 +67,6 @@ gulp.task 'build', () ->
     .pipe(watch())
     .pipe(plumber())
     .pipe(gulp.dest('dist/images/'))
-
-  gulp.src('src/sounds/*.*')
-    .pipe(watch())
-    .pipe(plumber())
-    .pipe(gulp.dest('dist/sounds/'))
 
   # Build coffee
   gulp.src('src/**/*.coffee', { read: true })
