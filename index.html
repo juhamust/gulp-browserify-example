@@ -39,9 +39,9 @@
             
   <div class="section" id="gulp-browserify-example">
 <h1>gulp-browserify-example<a class="headerlink" href="#gulp-browserify-example" title="Permalink to this headline">¶</a></h1>
-<p>This is a simple but non-trivial example of using browserify with gulp.
+<p>This is a simple but non-trivial example of using <a class="reference external" href="http://browserify.org/">Browserify</a> with <a class="reference external" href="http://gulpjs.org/">Gulp</a>.
 The example was created as an personal exercise while hopefully being
-helpful for someone else too struggling with <a class="reference external" href="http://gulpjs.org/">Gulp</a> and <a class="reference external" href="http://browserify.org/">Browserify</a>.</p>
+helpful for someone else too struggling with these tools.</p>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">This repo is a working-in-progress: I&#8217;m also learning by doing.
@@ -78,7 +78,32 @@ cd gulp-browserify-example
 <p>This section briefly describes the contents of the repo.</p>
 <dl class="docutils">
 <dt><strong>Gulp Shimming</strong></dt>
-<dd>TBD</dd>
+<dd><p class="first">Shimming rules are defined in <tt class="docutils literal"><span class="pre">package.json</span></tt> unlike, say, in require.js.
+These rules are taken from this repo:</p>
+<div class="last highlight-javascript"><div class="highlight"><pre><span class="c1">// Define shorthands for the downloaded components.</span>
+<span class="c1">// Note the name &#39;browser&#39; instead of &#39;browserify&#39;</span>
+<span class="s2">&quot;browser&quot;</span><span class="o">:</span> <span class="p">{</span>
+  <span class="s2">&quot;jquery&quot;</span><span class="o">:</span> <span class="s2">&quot;./build/components/jquery/dist/jquery.min.js&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;underscore&quot;</span><span class="o">:</span> <span class="s2">&quot;./build/components/lodash/dist/lodash.underscore.js&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;backbone&quot;</span><span class="o">:</span> <span class="s2">&quot;./build/components/backbone/backbone.js&quot;</span>
+<span class="p">},</span>
+
+<span class="c1">// Define what non-CommonJS compatible components exports and what are their dependencies</span>
+<span class="c1">// Note how the name uses the ones defined in &#39;browser&#39;</span>
+<span class="s2">&quot;browserify-shim&quot;</span><span class="o">:</span> <span class="p">{</span>
+  <span class="s2">&quot;jquery&quot;</span><span class="o">:</span> <span class="s2">&quot;$&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;underscore&quot;</span><span class="o">:</span> <span class="s2">&quot;global:_&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;backbone&quot;</span><span class="o">:</span> <span class="p">{</span>
+    <span class="s2">&quot;exports&quot;</span><span class="o">:</span> <span class="s2">&quot;Backbone&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;depends&quot;</span><span class="o">:</span> <span class="p">[</span>
+      <span class="s2">&quot;jquery:$&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;underscore:_&quot;</span>
+    <span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd>
 <dt><strong>Coffeescripted Gulp</strong></dt>
 <dd>TBD</dd>
 <dt><strong>Multiple Bundles</strong></dt>
@@ -104,10 +129,17 @@ browser whenever changes are done. Usage:</p>
 <li>Make a change in any of the source files and see how browser reloads itself</li>
 </ol>
 </dd>
-</dl>
-<dl class="docutils">
 <dt><strong>Sphinx</strong></dt>
-<dd>TBD</dd>
+<dd><p class="first">This documentation is powered by excellent <a class="reference external" href="http://sphinx.pocoo.org/">Sphinx</a> documentation platform.
+The files are in ReStructuredText format (.rst) and can be built into HTLM with command:</p>
+<div class="highlight-python"><div class="highlight"><pre>gulp doc --target=dist/doc
+</pre></div>
+</div>
+<p>In a case you don&#8217;t have sphinx installed, run these first (requires python and pip):</p>
+<div class="last highlight-python"><div class="highlight"><pre>pip install sphinx
+</pre></div>
+</div>
+</dd>
 </dl>
 </div>
 <div class="section" id="references">
