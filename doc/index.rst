@@ -1,8 +1,8 @@
 gulp-browserify-example
 =======================
-This is a simple but non-trivial example of using browserify with gulp.
+This is a simple but non-trivial example of using Browserify_ with Gulp_.
 The example was created as an personal exercise while hopefully being
-helpful for someone else too struggling with Gulp_ and Browserify_.
+helpful for someone else too struggling with these tools.
 
 .. note::
 
@@ -24,7 +24,7 @@ helpful for someone else too struggling with Gulp_ and Browserify_.
 
 #.  Build::
 
-      gulp
+      gulp build
 
 #.  See generated resources at (also open ``app.html`` in browser)::
 
@@ -35,21 +35,53 @@ Features
 --------
 This section briefly describes the contents of the repo.
 
-**Gulp**
+**Gulp Shimming**
+  Shimming rules are defined in ``package.json`` unlike, say, in require.js.
+  These rules are taken from this repo:
+
+  .. code-block:: javascript
+
+    // Define shorthands for the downloaded components.
+    // Note the name 'browser' instead of 'browserify'
+    "browser": {
+      "jquery": "./build/components/jquery/dist/jquery.min.js",
+      "underscore": "./build/components/lodash/dist/lodash.underscore.js",
+      "backbone": "./build/components/backbone/backbone.js"
+    },
+
+    // Define what non-CommonJS compatible components exports and what are their dependencies
+    // Note how the name uses the ones defined in 'browser'
+    "browserify-shim": {
+      "jquery": "$",
+      "underscore": "global:_",
+      "backbone": {
+        "exports": "Backbone",
+        "depends": [
+          "jquery:$",
+          "underscore:_"
+        ]
+      }
+    }
+
+
+
+**Coffeescripted Gulp**
   TBD
 
-**Coffeescript**
+**Multiple Bundles**
   TBD
 
-**Bundles**
+**Styles with LESS**
   TBD
 
-**LESS**
-  TBD
+**CLI Argumnents**
+  Using command line arguments with Gulp. Example::
+
+    gulp build --watch
 
 **Backbone**
-  Backbone.js is included as an example of an external library and
-  have something to show in browser. The Backbone is bundled in lib.js
+  Backbone.js is included as an example of using an external library with Browserify.
+  In this example, the Backbone is bundled in lib.js
 
 **Livereload**
   Gulp script support the livereload, that makes it possible to reload
@@ -60,10 +92,25 @@ This section briefly describes the contents of the repo.
   #. Enable livereload in browser
   #. Make a change in any of the source files and see how browser reloads itself
 
+**Sphinx**
+  This documentation is powered by excellent Sphinx_ documentation platform.
+  The files are in ReStructuredText format (.rst) and can be built into HTLM with command::
+
+    gulp doc --target=dist/doc
+
+  In a case you don't have sphinx installed, run these first (requires python and pip)::
+
+    pip install sphinx
+
+References
+----------
+References and additional resources:
+
+* Gulp examples: https://github.com/gulpjs/gulp/tree/master/docs/recipes
+
+
 
 .. _Node: http://nodejs.org/
 .. _Gulp: http://gulpjs.org/
+.. _Sphinx: http://sphinx.pocoo.org/
 .. _Browserify: http://browserify.org/
-
-**Sphinx**
-  TBD

@@ -3,6 +3,8 @@
  *
 ###
 gulp = require('gulp')
+optimist = require('optimist')
+through = require('through2')
 watch = require('gulp-watch')
 browserify = require('gulp-browserify')
 coffee = require('gulp-coffee')
@@ -18,6 +20,25 @@ livereload = require('gulp-livereload')
 filter = require('gulp-filter')
 plumber = require('gulp-plumber')
 shell = require('gulp-shell')
+gulpif = require('gulp-if')
+
+# Check if --watch flag is set and enable livereload/watch if enabled
+watchEnabled = if (optimist.argv and optimist.argv.watch) then true else false
+watchIf = () ->
+  #return gulpif(watchEnabled, watch(arguments))
+  return through.obj (file, enc, callback) ->
+    this.push(file)
+    if watchEnabled
+      watch(arguments)
+    return callback()
+
+# Start livereload if --watch is set
+reloadIf = () ->
+  if watchEnabled
+    livereload(arguments)
+  return through.obj (file, enc, callback) ->
+    this.push(file)
+    return callback()
 
 
 # Clean generated files
@@ -29,11 +50,18 @@ gulp.task 'clean', (cb) ->
     ))
     .pipe(clean())
 
+###*
+ * Build Sphinx powered documentation. Also accepts the optional
+ * command line argument --target=../where/to/output
+ * Defaults to dist/doc directory
+###
 gulp.task 'doc', () ->
+  targetDir = if (optimist.argv and optimist.argv.target) then optimist.argv.target else 'dist/doc'
+  console.log 'watch', watchEnabled
   gulp.src('doc/*.*')
-    .pipe(watch())
+    .pipe(watchIf())
     .pipe(shell([
-      'sphinx-build -b singlehtml doc/ dist/doc'
+      'sphinx-build -b singlehtml doc/ ' + targetDir
     ]))
 
 
@@ -50,27 +78,27 @@ gulp.task 'build', () ->
 
   # Convert less -> css
   gulp.src('src/styles/*.less')
-    .pipe(watch())
+    .pipe(watchIf())
     .pipe(plumber())
     .pipe(less())
     .pipe(gulp.dest('dist/styles'))
-    .pipe(livereload())
+    .pipe(reloadIf())
 
   # Copy resources
   gulp.src('src/app.html')
-    .pipe(watch())
+    .pipe(watchIf())
     .pipe(plumber())
     .pipe(gulp.dest('dist'))
-    .pipe(livereload())
+    .pipe(reloadIf())
 
   gulp.src('src/images/*.*')
-    .pipe(watch())
+    .pipe(watchIf())
     .pipe(plumber())
     .pipe(gulp.dest('dist/images/'))
 
   # Build coffee
   gulp.src('src/**/*.coffee', { read: true })
-    .pipe(watch(
+    .pipe(watchIf(
       emit: 'all'
     ))
     .pipe(plumber())
@@ -123,7 +151,7 @@ gulp.task 'build', () ->
       prefix: 'Output'
     ))
     # Finally, live reload
-    .pipe(livereload())
+    .pipe(reloadIf())
 
 
 gulp.task('default', ['build'])
