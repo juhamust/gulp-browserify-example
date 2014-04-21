@@ -26,7 +26,7 @@ files =
   doc: 'doc/*',
   app: ['src/app.coffee', 'src/lib.coffee'],
   resources: ['src/app.html', 'src/images/*']
-  styles: 'src/styles/*/*.less'
+  styles: 'src/styles/*.less'
 
 # Clean generated files
 gulp.task 'clean', (cb) ->
@@ -54,20 +54,21 @@ gulp.task 'watch', ['build'], () ->
   gulp.watch(files.doc, ['doc'])
   gulp.watch(files.resources, ['build-resources'])
   gulp.watch(files.styles, ['build-styles'])
-  #livereload()
 
 gulp.task 'build-styles', () ->
   # Convert less -> css
-  gulp.src('src/styles/*.less')
+  gulp.src(files.styles)
     .pipe(plumber())
     .pipe(less())
     .pipe(gulp.dest('dist/styles'))
+    .pipe(livereload())
 
 gulp.task 'build-resources', () ->
   # Copy resources
   gulp.src(files.resources)
     .pipe(plumber())
     .pipe(gulp.dest('dist'))
+    .pipe(livereload())
 
 gulp.task 'build-coffee', () ->
   jsFilter = filter('*.js')
@@ -131,6 +132,7 @@ gulp.task 'build-coffee', () ->
     .pipe(using(
       prefix: 'Output'
     ))
+    .pipe(livereload())
 
 gulp.task('build', ['build-resources', 'build-styles', 'build-coffee'])
 gulp.task('default', ['build'])
