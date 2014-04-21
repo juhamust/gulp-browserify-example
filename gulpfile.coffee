@@ -48,6 +48,7 @@ gulp.task 'doc', () ->
     .pipe(shell([
       'sphinx-build -b singlehtml doc/ ' + targetDir
     ]))
+    .pipe(livereload())
 
 gulp.task 'watch', ['build'], () ->
   gulp.watch(files.app, ['build'])

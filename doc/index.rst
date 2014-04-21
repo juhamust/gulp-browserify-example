@@ -9,7 +9,6 @@ helpful for someone else too struggling with these tools.
   This repo is a working-in-progress: I'm also learning by doing.
   Your insight and suggestions about the topic are very welcome!
 
-
 **Get started**
 
 #.  Check out the sources::
@@ -63,21 +62,35 @@ This section briefly describes the contents of the repo.
       }
     }
 
-
-
 **Coffeescripted Gulp**
-  TBD
+  Gulpfile is written in CoffeeScript (see Gulpfile.coffee) whereas ``Gulpfile.js``
+  only loads the the ``.coffee`` file - easy and handy!::
+
+    require('coffee-script/register');
+    require('./gulpfile.coffee');  
 
 **Multiple Bundles**
-  TBD
+  The Gulpfile shows how to create two bundles. The idea is to create two of them:
 
-**Styles with LESS**
-  TBD
+  - **app.js**: Our app as a bundle
+  - **lib.js**: External references and libraries like jquery ja backbone 
 
-**CLI Argumnents**
-  Using command line arguments with Gulp. Example::
+**Styles with Less**
+  The example style file is written using Less_. The Gulp script transforms the 
+  ``.less`` file into ``.css`` with task::
 
-    gulp build --watch
+    gulp build-styles    
+
+**Autobuild on change**
+  Gulp script provides a watch support, running the relevant tasks whenever the files
+  are changed. The watching is started with command::
+
+    gulp watch
+
+  When started, the full build is executed and then started to watch for changes.
+  If only building is wanted, use command::
+
+    gulp build
 
 **Backbone**
   Backbone.js is included as an example of using an external library with Browserify.
@@ -114,3 +127,4 @@ References and additional resources:
 .. _Gulp: http://gulpjs.org/
 .. _Sphinx: http://sphinx.pocoo.org/
 .. _Browserify: http://browserify.org/
+.. _Less: http://lesscss.org/
