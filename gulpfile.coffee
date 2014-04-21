@@ -8,7 +8,7 @@ through = require('through2')
 watch = require('gulp-watch')
 browserify = require('gulp-browserify')
 coffee = require('gulp-coffee')
-gutil = require('gulp-util')
+util = require('gulp-util')
 clean = require('gulp-clean')
 cat = require('gulp-cat')
 using = require('gulp-using')
@@ -22,24 +22,11 @@ plumber = require('gulp-plumber')
 shell = require('gulp-shell')
 gulpif = require('gulp-if')
 
-# Check if --watch flag is set and enable livereload/watch if enabled
-watchEnabled = if (optimist.argv and optimist.argv.watch) then true else false
-watchIf = () ->
-  #return gulpif(watchEnabled, watch(arguments))
-  return through.obj (file, enc, callback) ->
-    this.push(file)
-    if watchEnabled
-      watch(arguments)
-    return callback()
-
-# Start livereload if --watch is set
-reloadIf = () ->
-  if watchEnabled
-    livereload(arguments)
-  return through.obj (file, enc, callback) ->
-    this.push(file)
-    return callback()
-
+files = 
+  doc: 'doc/*',
+  app: ['src/app.coffee', 'src/lib.coffee'],
+  resources: ['src/app.html', 'src/images/*']
+  styles: 'src/styles/*/*.less'
 
 # Clean generated files
 gulp.task 'clean', (cb) ->
@@ -57,15 +44,32 @@ gulp.task 'clean', (cb) ->
 ###
 gulp.task 'doc', () ->
   targetDir = if (optimist.argv and optimist.argv.target) then optimist.argv.target else 'dist/doc'
-  console.log 'watch', watchEnabled
   gulp.src('doc/*.*')
-    .pipe(watchIf())
     .pipe(shell([
       'sphinx-build -b singlehtml doc/ ' + targetDir
     ]))
 
+gulp.task 'watch', ['build'], () ->
+  gulp.watch(files.app, ['build'])
+  gulp.watch(files.doc, ['doc'])
+  gulp.watch(files.resources, ['build-resources'])
+  gulp.watch(files.styles, ['build-styles'])
+  #livereload()
 
-gulp.task 'build', () ->
+gulp.task 'build-styles', () ->
+  # Convert less -> css
+  gulp.src('src/styles/*.less')
+    .pipe(plumber())
+    .pipe(less())
+    .pipe(gulp.dest('dist/styles'))
+
+gulp.task 'build-resources', () ->
+  # Copy resources
+  gulp.src(files.resources)
+    .pipe(plumber())
+    .pipe(gulp.dest('dist'))
+
+gulp.task 'build-coffee', () ->
   jsFilter = filter('*.js')
   appFilter = filter(['app.js'])
   libFilter = filter(['*.js', '!app.js'])
@@ -76,31 +80,8 @@ gulp.task 'build', () ->
     'backbone',
   ]
 
-  # Convert less -> css
-  gulp.src('src/styles/*.less')
-    .pipe(watchIf())
-    .pipe(plumber())
-    .pipe(less())
-    .pipe(gulp.dest('dist/styles'))
-    .pipe(reloadIf())
-
-  # Copy resources
-  gulp.src('src/app.html')
-    .pipe(watchIf())
-    .pipe(plumber())
-    .pipe(gulp.dest('dist'))
-    .pipe(reloadIf())
-
-  gulp.src('src/images/*.*')
-    .pipe(watchIf())
-    .pipe(plumber())
-    .pipe(gulp.dest('dist/images/'))
-
   # Build coffee
   gulp.src('src/**/*.coffee', { read: true })
-    .pipe(watchIf(
-      emit: 'all'
-    ))
     .pipe(plumber())
     .pipe(using(
       prefix: 'Building'
@@ -112,7 +93,7 @@ gulp.task 'build', () ->
         bare: false
         sourceMap: true
       )
-      .on('error', gutil.log)
+      .on('error', util.log)
     )
     .pipe(gulp.dest('./dist/'))
 
@@ -150,8 +131,6 @@ gulp.task 'build', () ->
     .pipe(using(
       prefix: 'Output'
     ))
-    # Finally, live reload
-    .pipe(reloadIf())
 
-
+gulp.task('build', ['build-resources', 'build-styles', 'build-coffee'])
 gulp.task('default', ['build'])
