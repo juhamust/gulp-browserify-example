@@ -6,10 +6,12 @@ lib-cov
 *.out
 *.pid
 *.gz
+*.sublime-*
 
 pids
 logs
 results
-
+dist
+build
 npm-debug.log
 node_modules

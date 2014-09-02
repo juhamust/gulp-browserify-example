@@ -5,24 +5,9 @@
 gulp = require('gulp')
 optimist = require('optimist')
 through = require('through2')
-watch = require('gulp-watch')
-browserify = require('gulp-browserify')
-coffee = require('gulp-coffee')
-util = require('gulp-util')
-clean = require('gulp-clean')
-cat = require('gulp-cat')
-using = require('gulp-using')
-less = require('gulp-less')
-concat = require('gulp-concat')
-cat = require('gulp-cat')
-coffeelint = require('gulp-coffeelint')
-livereload = require('gulp-livereload')
-filter = require('gulp-filter')
-plumber = require('gulp-plumber')
-shell = require('gulp-shell')
-gulpif = require('gulp-if')
+plugins = require('gulp-load-plugins')()
 
-files = 
+files =
   doc: 'doc/*',
   app: ['src/app.coffee', 'src/lib.coffee'],
   resources: ['src/app.html', 'src/images/*']
@@ -31,11 +16,11 @@ files =
 # Clean generated files
 gulp.task 'clean', (cb) ->
   gulp.src(['build/app.*', 'dist/*'], {read: false})
-    .pipe(using(
+    .pipe(plugins.using(
       prefix: 'Deleting'
       color: 'red'
     ))
-    .pipe(clean())
+    .pipe(plugins.rimraf())
 
 ###*
  * Build Sphinx powered documentation. Also accepts the optional
@@ -45,10 +30,10 @@ gulp.task 'clean', (cb) ->
 gulp.task 'doc', () ->
   targetDir = if (optimist.argv and optimist.argv.target) then optimist.argv.target else 'dist/doc'
   gulp.src('doc/*.*')
-    .pipe(shell([
-      'sphinx-build -b singlehtml doc/ ' + targetDir
+    .pipe(plugins.shell([
+      'sphinx-build -b singlehtml . ' + targetDir
     ]))
-    .pipe(livereload())
+    .pipe(plugins.livereload())
 
 gulp.task 'watch', ['build'], () ->
   gulp.watch(files.app, ['build'])
@@ -59,22 +44,22 @@ gulp.task 'watch', ['build'], () ->
 gulp.task 'build-styles', () ->
   # Convert less -> css
   gulp.src(files.styles)
-    .pipe(plumber())
-    .pipe(less())
+    .pipe(plugins.plumber())
+    .pipe(plugins.less())
     .pipe(gulp.dest('dist/styles'))
-    .pipe(livereload())
+    .pipe(plugins.livereload())
 
 gulp.task 'build-resources', () ->
   # Copy resources
   gulp.src(files.resources)
-    .pipe(plumber())
+    .pipe(plugins.plumber())
     .pipe(gulp.dest('dist'))
-    .pipe(livereload())
+    .pipe(plugins.livereload())
 
 gulp.task 'build-coffee', () ->
-  jsFilter = filter('*.js')
-  appFilter = filter(['app.js'])
-  libFilter = filter(['*.js', '!app.js'])
+  jsFilter = plugins.filter('*.js')
+  appFilter = plugins.filter(['app.js'])
+  libFilter = plugins.filter(['*.js', '!app.js'])
 
   # Names of external libraries (are put in lib.js)
   libNames = [
@@ -84,27 +69,27 @@ gulp.task 'build-coffee', () ->
 
   # Build coffee
   gulp.src('src/**/*.coffee', { read: true })
-    .pipe(plumber())
-    .pipe(using(
+    .pipe(plugins.plumber())
+    .pipe(plugins.using(
       prefix: 'Building'
     ))
-    .pipe(coffeelint())
-    .pipe(coffeelint.reporter())
+    .pipe(plugins.coffeelint())
+    .pipe(plugins.coffeelint.reporter())
     .pipe(
-      coffee(
+      plugins.coffee(
         bare: false
         sourceMap: true
       )
-      .on('error', util.log)
+      .on('error', plugins.util.log)
     )
     .pipe(gulp.dest('./dist/'))
 
     # Build lib bundle
     .pipe(libFilter)
-    .pipe(using(
+    .pipe(plugins.using(
       prefix: 'Lib packaging'
     ))
-    .pipe(browserify(
+    .pipe(plugins.browserify(
       transform: ['browserify-shim'],
       insertGlobals : false,
       debug : true
@@ -112,17 +97,17 @@ gulp.task 'build-coffee', () ->
     .on 'prebundle', (bundle) ->
       bundle.require extLib for extLib in libNames
     .pipe(gulp.dest('./dist/'))
-    .pipe(using(
+    .pipe(plugins.using(
       prefix: 'Output'
     ))
     .pipe(libFilter.restore())
 
     # Build app bundle
     .pipe(appFilter)
-    .pipe(using(
+    .pipe(plugins.using(
       prefix: 'App packaging'
     ))
-    .pipe(browserify(
+    .pipe(plugins.browserify(
       transform: ['browserify-shim'],
       insertGlobals : false,
       debug : true
@@ -130,10 +115,10 @@ gulp.task 'build-coffee', () ->
     .on 'prebundle', (bundle) ->
       bundle.external extLib for extLib in libNames
     .pipe(gulp.dest('./dist/'))
-    .pipe(using(
+    .pipe(plugins.using(
       prefix: 'Output'
     ))
-    .pipe(livereload())
+    .pipe(plugins.livereload())
 
 gulp.task('build', ['build-resources', 'build-styles', 'build-coffee'])
 gulp.task('default', ['build'])
