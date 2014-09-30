@@ -5,6 +5,7 @@ lib-cov
 *.dat
 *.out
 *.pid
+*.swp
 *.gz
 *.sublime-*
 
@@ -14,4 +15,5 @@ results
 dist
 build
 npm-debug.log
+components
 node_modules

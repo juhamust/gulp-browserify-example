@@ -3,9 +3,13 @@
  *
 ###
 gulp = require('gulp')
+util = require('util')
+browserify = require('browserify')
+source = require('vinyl-source-stream')
 optimist = require('optimist')
 through = require('through2')
 plugins = require('gulp-load-plugins')()
+pkg = require('./package.json')
 
 files =
   doc: 'doc/*',
@@ -15,7 +19,7 @@ files =
 
 # Clean generated files
 gulp.task 'clean', (cb) ->
-  gulp.src(['build/app.*', 'dist/*'], {read: false})
+  gulp.src(['build/*', 'dist/*'], {read: false})
     .pipe(plugins.using(
       prefix: 'Deleting'
       color: 'red'
@@ -33,7 +37,6 @@ gulp.task 'doc', () ->
     .pipe(plugins.shell([
       'sphinx-build -b singlehtml . ' + targetDir
     ]))
-    .pipe(plugins.livereload())
 
 gulp.task 'watch', ['build'], () ->
   gulp.watch(files.app, ['build'])
@@ -47,78 +50,59 @@ gulp.task 'build-styles', () ->
     .pipe(plugins.plumber())
     .pipe(plugins.less())
     .pipe(gulp.dest('dist/styles'))
-    .pipe(plugins.livereload())
 
 gulp.task 'build-resources', () ->
   # Copy resources
   gulp.src(files.resources)
     .pipe(plugins.plumber())
     .pipe(gulp.dest('dist'))
-    .pipe(plugins.livereload())
 
-gulp.task 'build-coffee', () ->
-  jsFilter = plugins.filter('*.js')
-  appFilter = plugins.filter(['app.js'])
-  libFilter = plugins.filter(['*.js', '!app.js'])
+gulp.task 'serve', plugins.serve(
+  root: ['dist']
+  port: 8080
+)
 
-  # Names of external libraries (are put in lib.js)
-  libNames = [
-    'underscore', 'jquery',
-    'backbone',
-  ]
+gulp.task 'bundle', ['bundle-lib', 'bundle-app']
 
-  # Build coffee
-  gulp.src('src/**/*.coffee', { read: true })
-    .pipe(plugins.plumber())
-    .pipe(plugins.using(
-      prefix: 'Building'
-    ))
-    .pipe(plugins.coffeelint())
-    .pipe(plugins.coffeelint.reporter())
-    .pipe(
-      plugins.coffee(
-        bare: false
-        sourceMap: true
-      )
-      .on('error', plugins.util.log)
+gulp.task 'bundle-app', ['translate-app-coffee'], () ->
+  return browserify()
+    .add('./build/app.js')
+    .external('jquery')
+    .external('underscore')
+    .external('backbone')
+    .bundle()
+    .on('error', plugins.util.log)
+    .pipe(source('app.js'))
+    .pipe(gulp.dest('./dist/'));
+
+gulp.task 'bundle-lib', ['translate-lib-coffee'], () ->
+  return browserify()
+    .add('./build/lib.js')
+    .require('jquery')
+    .require('underscore')
+    .require('backbone')
+    .bundle()
+    .on('error', plugins.util.log)
+    .pipe(source('lib.js'))
+    .pipe(gulp.dest('./dist/'))
+
+gulp.task 'translate-app-coffee', () ->
+  return gulp.src('src/app.coffee')
+    .pipe(plugins.coffee(
+      bare: false
+      sourceMap: true
     )
-    .pipe(gulp.dest('./dist/'))
+    .on('error', plugins.util.log))
+    .pipe(gulp.dest('build/'))
 
-    # Build lib bundle
-    .pipe(libFilter)
-    .pipe(plugins.using(
-      prefix: 'Lib packaging'
-    ))
-    .pipe(plugins.browserify(
-      transform: ['browserify-shim'],
-      insertGlobals : false,
-      debug : true
-    ))
-    .on 'prebundle', (bundle) ->
-      bundle.require extLib for extLib in libNames
-    .pipe(gulp.dest('./dist/'))
-    .pipe(plugins.using(
-      prefix: 'Output'
-    ))
-    .pipe(libFilter.restore())
+gulp.task 'translate-lib-coffee', () ->
+  return gulp.src('src/lib.coffee')
+    .pipe(plugins.coffee(
+      bare: false
+      sourceMap: true
+    )
+    .on('error', plugins.util.log))
+    .pipe(gulp.dest('build/'))
 
-    # Build app bundle
-    .pipe(appFilter)
-    .pipe(plugins.using(
-      prefix: 'App packaging'
-    ))
-    .pipe(plugins.browserify(
-      transform: ['browserify-shim'],
-      insertGlobals : false,
-      debug : true
-    ))
-    .on 'prebundle', (bundle) ->
-      bundle.external extLib for extLib in libNames
-    .pipe(gulp.dest('./dist/'))
-    .pipe(plugins.using(
-      prefix: 'Output'
-    ))
-    .pipe(plugins.livereload())
-
-gulp.task('build', ['build-resources', 'build-styles', 'build-coffee'])
+gulp.task('build', ['bundle', 'build-resources', 'build-styles'])
 gulp.task('default', ['build'])

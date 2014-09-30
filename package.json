@@ -24,13 +24,13 @@
     "bundle"
   ],
   "browser": {
-    "jquery": "./build/components/jquery/dist/jquery.min.js",
-    "underscore": "./build/components/lodash/dist/lodash.underscore.js",
-    "backbone": "./build/components/backbone/backbone.js"
+    "jquery": "./src/components/jquery/dist/jquery.min.js",
+    "underscore": "./src/components/lodash/dist/lodash.underscore.js",
+    "backbone": "./src/components/backbone/backbone.js"
   },
   "browserify-shim": {
-    "jquery": "$",
-    "underscore": "global:_",
+    "jquery": "global:$",
+    "underscore": "_",
     "backbone": {
       "exports": "Backbone",
       "depends": [
@@ -42,31 +42,33 @@
   "author": "Juha Mustonen",
   "license": "MIT",
   "devDependencies": {
-    "bower": "^1.2.8",
-    "browserify": "^3.26.0",
+    "bower": "^1.3.12",
+    "browserify": "^3.46.1",
     "browserify-shim": "^3.2.2",
-    "coffee-script": "~1.7.1",
-    "coffeeify": "~0.6.0",
-    "gulp": "^3.5.6",
-    "gulp-browserify": "^0.4.6",
+    "coffee-script": "^1.7.1",
+    "coffeeify": "^0.6.0",
+    "gulp": "^3.8.8",
     "gulp-cat": "~0.3.0",
-    "gulp-clean": "~0.2.4",
-    "gulp-coffee": "~1.4.1",
+    "gulp-clean": "^0.2.4",
+    "gulp-coffee": "^1.4.3",
+    "gulp-coffeeify": "^0.1.2",
     "gulp-coffeelint": "^0.3.1",
-    "gulp-concat": "^2.1.7",
+    "gulp-concat": "^2.4.1",
     "gulp-filter": "^0.3.1",
     "gulp-if": "0.0.5",
-    "gulp-less": "~1.2.1",
-    "gulp-livereload": "^1.1.1",
+    "gulp-less": "^1.2.4",
+    "gulp-livereload": "^1.5.0",
     "gulp-load-plugins": "^0.6.0",
     "gulp-plumber": "^0.5.6",
     "gulp-rimraf": "^0.1.0",
+    "gulp-serve": "^0.2.0",
     "gulp-shell": "^0.2.4",
     "gulp-using": "0.0.1",
-    "gulp-util": "~2.2.14",
+    "gulp-util": "^3.0.1",
     "gulp-watch": "^0.5.4",
     "optimist": "^0.6.1",
     "sphinx-npm": "^0.2.0",
-    "through2": "^0.4.1"
+    "through2": "^0.4.2",
+    "vinyl-source-stream": "^1.0.0"
   }
 }

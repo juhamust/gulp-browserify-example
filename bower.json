@@ -12,6 +12,7 @@
     "node_modules",
     "bower_components",
     "build/components",
+    "src/components",
     "test",
     "tests"
   ],
